@@ -1,0 +1,76 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    classification_report
+)
+
+data=pd.read_csv("diabetes.csv")
+
+print("First 5 rows of the dataset:")
+print(data.head())
+
+print("\nDataset shape:")
+print(data.shape)
+
+X=data.drop("Outcome", axis=1)
+y=data["Outcome"]
+
+X_train, X_test, y_train, y_test=train_test_split(
+    X, y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+print("\nTraining data shape:", X_train.shape)
+print("Testing data shape :", X_test.shape)
+
+model_without_scaling=LogisticRegression(max_iter=1000)
+
+model_without_scaling.fit(X_train, y_train)
+
+y_pred_without=model_without_scaling.predict(X_test)
+
+accuracy_without=accuracy_score(y_test, y_pred_without)
+precision_without=precision_score(y_test, y_pred_without)
+recall_without=recall_score(y_test, y_pred_without)
+f1_without=f1_score(y_test, y_pred_without)
+
+print("\n")
+print("=" * 60)
+print("LOGISTIC REGRESSION WITHOUT FEATURE SCALING")
+print("=" * 60)
+
+print("Accuracy :", accuracy_without)
+print("Precision:", precision_without)
+print("Recall   :", recall_without)
+print("F1-score :", f1_without)
+
+print("\nClassification Report:")
+print(classification_report(
+    y_test,
+    y_pred_without,
+    target_names=["No Diabetes", "Diabetes"]
+))
+
+
+cm_without=confusion_matrix(y_test, y_pred_without)
+
+print("\nConfusion Matrix - Without Scaling:")
+print(cm_without)
+
+disp=ConfusionMatrixDisplay(
+confusion_matrix=cm_without,
+display_labels=["No Diabetes", "Diabetes"])
+disp.plot()
+plt.title("Confusion Matrix - Without Feature Scaling")
+plt.show()

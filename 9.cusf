@@ -1,0 +1,43 @@
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from sklearn.tree import DecisionTreeClassifier, plot_tree
+
+data=pd.read_excel("Online Retail.xlsx")
+
+data=data.dropna(subset=["CustomerID"])
+
+data["TotalAmount"]=data["Quantity"]*data["UnitPrice"]
+
+customer_data=data.groupby("CustomerID").agg(
+    TotalSpend=("TotalAmount", "sum"),
+    TotalItems=("Quantity", "sum"), NumInvoices=("InvoiceNo", "nunique")
+).reset_index()
+
+customer_data["CustomerType"]=np.where(
+    customer_data["TotalSpend"]>=customer_data["TotalSpend"].median(),
+    "High",
+    "Low"
+)
+
+X=customer_data[["TotalItems", "NumInvoices"]]
+y=customer_data["CustomerType"]
+
+model=DecisionTreeClassifier(
+    criterion="entropy",
+    max_depth=3, random_state=42
+)
+model.fit(X,y)
+
+print("Feature Importance:")
+for feature, value in zip(X.columns, model.feature_importances_):
+    print(feature, ":", value)
+
+plt.figure(figsize=(12,7))
+plot_tree(
+    model,
+    feature_names=X.columns,
+    class_names=model.classes_,
+    filled=True
+)
+plt.show()

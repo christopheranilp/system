@@ -1,0 +1,81 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import StandardScaler
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (
+    accuracy_score,
+    precision_score,
+    recall_score,
+    f1_score,
+    confusion_matrix,
+    ConfusionMatrixDisplay,
+    classification_report
+)
+
+data = pd.read_csv("diabetes.csv")
+
+print("First 5 rows of the dataset:")
+print(data.head())
+print("\nDataset shape:")
+print(data.shape)
+
+X = data.drop("Outcome", axis=1)
+y = data["Outcome"]
+
+X_train, X_test, y_train, y_test = train_test_split(
+    X, y,
+    test_size=0.20,
+    random_state=42,
+    stratify=y
+)
+
+print("\nTraining data shape:", X_train.shape)
+print("Testing data shape :", X_test.shape)
+
+scaler = StandardScaler()
+
+X_train_scaled = scaler.fit_transform(X_train)
+
+X_test_scaled = scaler.transform(X_test)
+
+model_with_scaling = LogisticRegression(max_iter=1000)
+
+model_with_scaling.fit(X_train_scaled, y_train)
+
+y_pred_with = model_with_scaling.predict(X_test_scaled)
+
+accuracy_with = accuracy_score(y_test, y_pred_with)
+precision_with = precision_score(y_test, y_pred_with)
+recall_with = recall_score(y_test, y_pred_with)
+f1_with = f1_score(y_test, y_pred_with)
+print("\n")
+print("=" * 60)
+print("LOGISTIC REGRESSION WITH FEATURE SCALING")
+print("=" * 60)
+
+print("Accuracy :", accuracy_with)
+print("Precision:", precision_with)
+print("Recall   :", recall_with)
+print("F1-Score :", f1_with)
+
+print("\nClassification Report:")
+print(classification_report(
+    y_test,
+    y_pred_with,
+    target_names=["No Diabetes", "Diabetes"]
+))
+
+cm_with = confusion_matrix(y_test, y_pred_with)
+
+print("\nConfusion Matrix - With Scaling:")
+print(cm_with)
+
+disp = ConfusionMatrixDisplay(
+    confusion_matrix=cm_with,
+    display_labels=["No Diabetes", "Diabetes"]
+)
+disp.plot()
+plt.title("Confusion Matrix - With Feature Scaling")
+plt.show()
